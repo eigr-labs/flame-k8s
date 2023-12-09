@@ -1,6 +1,9 @@
 defmodule FLAME.K8s.MixProject do
   use Mix.Project
 
+  @app :flame_k8s
+  @version "0.1.0"
+
   def project do
     [
       app: :flame_k8s,
