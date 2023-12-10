@@ -8,7 +8,7 @@ defmodule FlameK8sController.K8s.Pod do
           name: name,
           namespace: ns,
           metadata: _metadata,
-          params: _spec
+          params: spec
         } = _resource,
         _opts \\ []
       ) do
@@ -17,16 +17,18 @@ defmodule FlameK8sController.K8s.Pod do
       "kind" => "Pod",
       "metadata" => %{
         "namespace" => ns,
-        "name" => name
+        "name" => name,
+        "annotations" => annotations,
+        "labels" => labels
       },
       "spec" => %{
         "restartPolicy" => "Never",
         "containers" => [
           %{
-            "image" => "todo",
-            "name" => "todo",
-            "resources" => %{},
-            "env" => %{}
+            "image" => spec.image,
+            "name" => name,
+            "resources" => spec.resources,
+            "env" => spec.env
           }
         ]
       }
