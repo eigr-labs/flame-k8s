@@ -8,7 +8,7 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
         %{"apiVersion" => "apps/v1", "kind" => "Deployment"} = resource,
         "apps/v1"
       ) do
-        # TODO inject envs
+    # TODO inject envs
     {:ok, put_in(resource, ~w(metadata labels), %{"foo" => "bar"})}
   end
 
@@ -16,7 +16,7 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
         %{"apiVersion" => "apps/v1", "kind" => "StatefulSet"} = resource,
         "apps/v1"
       ) do
-        # TODO inject envs
+    # TODO inject envs
     {:ok, put_in(resource, ~w(metadata labels), %{"foo" => "bar"})}
   end
 end

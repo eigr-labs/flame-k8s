@@ -16,7 +16,7 @@ defmodule FlameK8sController.Handler.FlameRunnerHandler do
 
     pod_resource =
       Operator.get_args(resource)
-      |> FlameK8sController.K8s.Pod.manifest()
+      |> Pod.manifest()
 
     axn
     |> Bonny.Axn.register_descendant(pod_resource)

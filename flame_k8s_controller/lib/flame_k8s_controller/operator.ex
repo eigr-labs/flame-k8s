@@ -18,7 +18,7 @@ defmodule FlameK8sController.Operator do
   def controllers(watching_namespace, _opts) do
     [
       %{
-        query: K8s.Client.watch("flame.org/v1", "FlameRunner", namespace: watch_namespace),
+        query: K8s.Client.watch("flame.org/v1", "FlameRunner", namespace: watching_namespace),
         controller: FlameK8sController.Controller.FlameRunner
       }
     ]
@@ -32,7 +32,7 @@ defmodule FlameK8sController.Operator do
           Bonny.API.CRD.kind_to_names("FlameRunner", [
             "fr",
             "flamerunner",
-            "flamerunners"
+            "flamerunners",
             "runner",
             "runners"
           ]),
