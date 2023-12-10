@@ -7,6 +7,10 @@ config :bonny,
 
   # Name must only consist of only lowercase letters and hyphens.
   # Defaults to hyphenated mix app name
+  operator_name: "flame-controller",
+
+  # Name must only consist of only lowercase letters and hyphens.
+  # Defaults to hyphenated mix app name
   service_account_name: "flame",
 
   # Labels to apply to the operator's resources.

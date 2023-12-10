@@ -15,12 +15,49 @@ defmodule FlameK8sController.Operator do
   step(Bonny.Pluggable.ApplyDescendants)
 
   @impl Bonny.Operator
-  def controllers(_watching_namespace, _opts) do
-    []
+  def controllers(watching_namespace, _opts) do
+    [
+      %{
+        query: K8s.Client.watch("flame.org/v1", "FlameRunner", namespace: watch_namespace),
+        controller: FlameK8sController.Controller.FlameRunner
+      }
+    ]
   end
 
   @impl Bonny.Operator
   def crds() do
-    []
+    [
+      Bonny.API.CRD.new!(
+        names:
+          Bonny.API.CRD.kind_to_names("FlameRunner", [
+            "fr",
+            "flamerunner",
+            "flamerunners"
+            "runner",
+            "runners"
+          ]),
+        group: "flame.org",
+        scope: :Namespaced,
+        versions: [FlameK8sController.Versions.Api.V1.FlameRunner]
+      )
+    ]
+  end
+
+  def get_args(resource) do
+    annotations = K8s.Resource.annotations(resource)
+    labels = K8s.Resource.labels(resource)
+    metadata = K8s.Resource.metadata(resource)
+    name = K8s.Resource.name(resource)
+    ns = K8s.Resource.namespace(resource) || "default"
+    spec = Map.get(resource, "spec")
+
+    %{
+      annotations: annotations,
+      labels: labels,
+      name: name,
+      namespace: ns,
+      metadata: metadata,
+      params: spec
+    }
   end
 end
