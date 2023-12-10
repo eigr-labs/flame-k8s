@@ -6,8 +6,8 @@ defmodule FLAME.K8s.MixProject do
 
   def project do
     [
-      app: :flame_k8s,
-      version: "0.1.0",
+      app: @app,
+      version: @version,
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       deps: deps()
