@@ -42,7 +42,8 @@ defmodule FlameK8sController.MixProject do
       {:bandit, "~> 1.1"},
       {:bakeware, ">= 0.0.0", runtime: false},
       {:bonny, "~> 1.4"},
-      {:castore, "~> 1.0"}
+      {:castore, "~> 1.0"},
+      {:k8s_webhoox, "~> 0.2"}
     ]
   end
 

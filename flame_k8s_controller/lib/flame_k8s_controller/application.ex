@@ -18,7 +18,13 @@ defmodule FlameK8sController.Application do
     [
       {FlameK8sController.Operator,
        conn: FlameK8sController.K8sConn.get!(env), enable_leader_election: true},
-      {Bandit, plug: FlameK8sController.Router, scheme: :http, port: @port}
+      {Bandit,
+       plug: FlameK8sController.Router,
+       scheme: :http,
+       port: @port,
+       certfile: "/mnt/cert/tls.crt",
+       keyfile: "/mnt/cert/tls.key",
+       scheme: :https}
     ]
   end
 end

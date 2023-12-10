@@ -9,5 +9,4 @@ defmodule Mix.Tasks.Bonny.Gen.Manifest.FlameK8sControllerCustomizerTest do
       assert test_map == MUT.override(test_map)
     end
   end
-
 end

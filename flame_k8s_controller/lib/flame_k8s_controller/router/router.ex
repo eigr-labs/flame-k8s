@@ -8,6 +8,14 @@ defmodule FlameK8sController.Router do
 
   forward("/health", to: FlameK8sController.Routes.Health)
 
+  post("/admission-review/mutating",
+    to: K8sWebhoox.Plug,
+    init_opts: [
+      webhook_handler:
+        {FlameK8sController.Webhooks.MutatingControlHandler, webhook_type: :mutating}
+    ]
+  )
+
   match _ do
     send_resp(conn, 404, "Not found!")
   end
