@@ -60,7 +60,7 @@ defmodule FLAME.K8sBackend do
 
     new_env =
       Map.merge(
-        %{PHX_SERVER: "false", DRAGONFLY_PARENT: encoded_parent},
+        %{PHX_SERVER: "false", FLAME_PARENT: encoded_parent},
         state.env
       )
 
@@ -77,6 +77,87 @@ defmodule FLAME.K8sBackend do
       )
 
     {:ok, initial_state}
+  end
+
+  @impl true
+  def remote_boot(%K8sBackend{parent_ref: parent_ref} = state) do
+    log(state, "Remote Boot")
+
+    {new_state, req_connect_time} =
+      with_elapsed_ms(fn ->
+        created_pod =
+          state
+          |> build_runner_pod_request()
+          |> provision_runner()
+
+        log(state, "Pod Created and Scheduled")
+
+        case created_pod do
+          {:ok, pod} ->
+            log(state, "Pod Scheduled. IP: #{pod["status"]["podIP"]}")
+
+            struct!(state,
+              runner_pod_ip: pod["status"]["podIP"],
+              runner_pod_name: pod["metadata"]["name"]
+            )
+
+          error ->
+            Logger.error(
+              "Failed to schedule runner pod within #{state.boot_timeout}ms. Details: #{inspect(error)}"
+            )
+
+            exit(:timeout)
+        end
+      end)
+
+    remaining_connect_window = state.boot_timeout - req_connect_time
+    runner_node_name = :"#{state.runner_node_basename}@#{new_state.runner_pod_ip}"
+
+    log(state, "Waiting for Remote UP. Remaining: #{remaining_connect_window}")
+
+    case loop_until_ok(fn -> Node.connect(runner_node_name) end, remaining_connect_window) do
+      {:ok, _} -> log(state, "Application connected with Runner ")
+      _ -> exit(:timeout)
+    end
+
+    remote_terminator_pid =
+      receive do
+        {^parent_ref, {:remote_up, remote_terminator_pid}} ->
+          remote_terminator_pid
+      after
+        remaining_connect_window ->
+          Logger.error("Failed to connect to runner pod within #{state.boot_timeout}ms")
+          exit(:timeout)
+      end
+
+    new_state =
+      struct!(new_state,
+        remote_terminator_pid: remote_terminator_pid,
+        runner_node_name: runner_node_name
+      )
+
+    {:ok, remote_terminator_pid, new_state}
+  end
+
+  defp build_runner_pod_request(state) do
+    %{base_pod: base_pod, env: env} = state
+
+    pod_name_sliced = base_pod |> get_in(~w(metadata name)) |> String.slice(0..40)
+    runner_pod_name = pod_name_sliced <> rand_id(20)
+
+    container_access =
+      case state.container_name do
+        nil -> []
+        name -> [Access.filter(&(&1["name"] == name))]
+      end
+
+    base_container = base_pod |> get_in(["spec", "containers" | container_access]) |> List.first()
+
+    %{}
+  end
+
+  defp provision_runner(runner_req) do
+    {:ok, %{}}
   end
 
   @impl true
@@ -102,11 +183,6 @@ defmodule FLAME.K8sBackend do
   end
 
   @impl true
-  def remote_boot(%K8sBackend{} = state) do
-    {:ok, nil, state}
-  end
-
-  @impl true
   def handle_info({:nodedown, down_node}, state) do
     if down_node == state.runner_node_name do
       log(state, "Runner #{state.runner_node_name} Down")
@@ -128,17 +204,20 @@ defmodule FLAME.K8sBackend do
     {result, div(micro, 1000)}
   end
 
-  defp connect_to_node(_node_name, timeout) when timeout <= 0 do
-    :error
+  def loop_until_ok(func, timeout \\ 30_000) do
+    task = Task.async(fn -> do_loop(func, func.()) end)
+
+    Task.await(task, timeout)
   end
 
-  defp connect_to_node(node_name, timeout) do
-    if Node.connect(node_name) do
-      :ok
-    else
-      Process.sleep(1000)
-      connect_to_node(node_name, timeout - 1000)
-    end
+  defp do_loop(_func, {:ok, term}), do: {:ok, term}
+
+  defp do_loop(func, _resp) do
+    do_loop(func, func.())
+  rescue
+    _ -> do_loop(func, func.())
+  catch
+    _ -> do_loop(func, func.())
   end
 
   defp rand_id(len) do
