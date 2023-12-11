@@ -7,6 +7,8 @@ defmodule FlameK8sController.Handler.FlameRunnerHandler do
 
   @behaviour Pluggable
 
+  @token "/var/run/secrets/kubernetes.io/serviceaccount"
+
   @impl Pluggable
   def init(_opts), do: nil
 
