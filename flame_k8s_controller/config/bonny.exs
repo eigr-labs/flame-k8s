@@ -11,11 +11,11 @@ config :bonny,
 
   # Name must only consist of only lowercase letters and hyphens.
   # Defaults to hyphenated mix app name
-  service_account_name: "flame",
+  service_account_name: "flame-controller",
 
   # Labels to apply to the operator's resources.
   labels: %{
-    "k8s-app" => "flame-k8s-controller"
+    "k8s-app" => "flame-controller"
   },
 
   # Operator deployment resources. These are the defaults.

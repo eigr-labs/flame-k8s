@@ -22,12 +22,12 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
           [
             %{
               "op" => "replace",
-              "path" => "/spec/containers/0/env",
+              "path" => "/spec/template/spec/containers/0/env",
               "value" => %{}
             }
           ]
-          |> Jason.encode()
-          |> Base.encode64!()
+          |> Jason.encode!()
+          |> Base.encode64()
 
         %Conn{
           conn
