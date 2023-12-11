@@ -8,18 +8,21 @@ defmodule FLAME.K8sBackend do
 
   @behaviour FLAME.Backend
 
-  defstruct env: %{},
-            parent_ref: nil,
-            runner_node_basename: nil,
-            runner_pod_ip: nil,
-            runner_pod_name: nil,
-            runner_node_name: nil,
+  defstruct base_pod: nil,
             boot_timeout: nil,
             container_name: nil,
+            controller_fqdn: nil,
+            controller_port: nil,
+            env: %{},
+            log: false,
+            parent_ref: nil,
             remote_terminator_pid: nil,
-            log: false
+            runner_node_name: nil,
+            runner_node_basename: nil,
+            runner_pod_ip: nil,
+            runner_pod_name: nil
 
-  @valid_opts ~w(container_name terminator_sup log)a
+  @valid_opts ~w(container_name controller_fqdn controller_port terminator_sup log)a
   @required_config ~w()a
 
   @impl true
@@ -30,6 +33,8 @@ defmodule FLAME.K8sBackend do
 
     default = %K8sBackend{
       boot_timeout: 30_000,
+      controller_fqdn: "flame-controller.flame.svc.cluster.local",
+      controller_port: 9090,
       runner_node_basename: node_base
     }
 
@@ -59,7 +64,17 @@ defmodule FLAME.K8sBackend do
         state.env
       )
 
-    initial_state = struct(state, env: new_env, parent_ref: parent_ref)
+    base_pod =
+      System.get_env("BASE_POD")
+      |> Base.decode64!()
+      |> Jason.decode!()
+
+    initial_state =
+      struct(state,
+        base_pod: base_pod,
+        env: new_env,
+        parent_ref: parent_ref
+      )
 
     {:ok, initial_state}
   end

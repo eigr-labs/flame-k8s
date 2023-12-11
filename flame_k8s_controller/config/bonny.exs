@@ -5,6 +5,9 @@ config :bonny,
   # The function should return a %K8s.Conn{} struct or a {:ok, %K8s.Conn{}} tuple
   get_conn: {FlameK8sController.K8sConn, :get!, [config_env()]},
 
+  # Set the Kubernetes API group for this operator.
+  group: "flame-eigr.io",
+
   # Name must only consist of only lowercase letters and hyphens.
   # Defaults to hyphenated mix app name
   operator_name: "flame-controller",
