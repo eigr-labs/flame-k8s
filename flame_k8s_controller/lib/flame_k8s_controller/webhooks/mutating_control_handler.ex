@@ -27,7 +27,7 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
             }
           ]
           |> Jason.encode()
-          |> Base.decode64!()
+          |> Base.encode64!()
 
         %Conn{
           conn
