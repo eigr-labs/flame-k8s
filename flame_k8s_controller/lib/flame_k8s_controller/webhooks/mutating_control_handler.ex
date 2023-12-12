@@ -16,23 +16,11 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
 
     %{"operation" => op, "object" => %{"spec" => spec}} = request
 
-    resp =
-      if op == "CREATE" do
-        patch_obj =
-          [
-            %{
-              "op" => "replace",
-              "path" => "/spec/template/spec/containers/0/env",
-              "value" => %{}
-            }
-          ]
-          |> Jason.encode!()
-          |> Base.encode64()
+    metadata = Map.get(spec, "template", %{})["metadata"]
 
-        %Conn{
-          conn
-          | response: %{response | patch: patch_obj, patchType: "JSONPatch"}
-        }
+    resp =
+      if is_flame_enabled?(metadata) do
+        create_patch(conn, patch_obj(spec))
       else
         conn
       end
@@ -48,4 +36,29 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
 
     allow(conn)
   end
+
+  defp is_flame_enabled?(metadata) do
+    annotations = Map.get(metadata, "annotations", %{})
+    Map.get(annotations, "flame-eigr.io/enabled", "false") |> to_bool()
+  end
+
+  defp patch_obj(spec) do
+    [
+      %{
+        "op" => "replace",
+        "path" => "/spec/template/spec/containers/0/env",
+        "value" => %{}
+      }
+    ]
+    |> Jason.encode!()
+    |> Base.encode64()
+  end
+
+  defp create_patch(conn, patch_obj) do
+    %Conn{conn | response: %{conn.response | patch: patch_obj, patchType: "JSONPatch"}}
+  end
+
+  def to_bool("true"), do: true
+  def to_bool("false"), do: false
+  def to_bool(_), do: false
 end
