@@ -10,11 +10,10 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
 
   mutate "apps/v1/deployments", conn do
     %Conn{
-      request: request,
-      response: response
+      request: request
     } = conn
 
-    %{"operation" => op, "object" => %{"spec" => spec}} = request
+    %{"object" => %{"spec" => spec}} = request
 
     metadata = Map.get(spec, "template", %{})["metadata"]
 
@@ -43,13 +42,45 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
   end
 
   defp patch_obj(spec) do
-    [
+    container =
+      spec
+      |> Map.get("template", %{})
+      |> Map.get("spec", %{})
+      |> Map.get("containers", [])
+      |> List.first()
+
+    base_pod =
+      Jason.encode!(spec.template)
+      |> Base.encode64()
+
+    envs = [
+      %{"name" => "BASE_POD", "value" => base_pod},
+      %{"name" => "POD_NAME", "valueFrom" => %{"fieldRef" => %{"fieldPath" => "metadata.name"}}},
       %{
-        "op" => "replace",
-        "path" => "/spec/template/spec/containers/0/env",
-        "value" => %{}
-      }
+        "name" => "POD_NAMESPACE",
+        "valueFrom" => %{"fieldRef" => %{"fieldPath" => "metadata.namespace"}}
+      },
+      %{"name" => "POD_IP", "valueFrom" => %{"fieldRef" => %{"fieldPath" => "status.podIP"}}}
     ]
+
+    updated_envs =
+      case Map.get(container, "env") do
+        nil ->
+          %{
+            "op" => "add",
+            "path" => "/spec/template/spec/containers/0",
+            "value" => %{"env" => envs}
+          }
+
+        existing_envs ->
+          %{
+            "op" => "replace",
+            "path" => "/spec/template/spec/containers/0/env",
+            "value" => existing_envs ++ envs
+          }
+      end
+
+    [updated_envs]
     |> Jason.encode!()
     |> Base.encode64()
   end
