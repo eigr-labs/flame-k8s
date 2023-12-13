@@ -1,5 +1,40 @@
 defmodule FlameK8sController.Handler.FlameRunnerHandler do
-  @moduledoc false
+  @moduledoc """
+
+  ---
+  apiVersion: flame-eigr.io/v1
+  kind: FlameRunner
+  metadata:
+    name: my-runner
+    namespace: default
+  spec:
+    image: docker.io/eigr/flame-examples:latest
+    runnerTemplate:
+      env:
+      - name: PHX_SERVER
+        value: "false"
+      - name: MIX_ENV
+        value: prod
+      - name: POD_NAME
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.name
+      - name: POD_NAMESPACE
+        valueFrom:
+          fieldRef:
+            fieldPath: metadata.namespace
+      - name: POD_IP
+        valueFrom:
+          fieldRef:
+            fieldPath: status.podIP
+      resources:
+        limits:
+          cpu: 200m
+          memory: 200Mi
+        requests:
+          cpu: 200m
+          memory: 200Mi
+  """
 
   alias FlameK8sController.K8s.HeadlessService
   alias FlameK8sController.Operator
