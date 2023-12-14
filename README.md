@@ -86,7 +86,7 @@ See what each annotation means in the following table:
 | flame-eigr.io/otp-app          |                  | Application release name. Required if dist-auto-config is set to "true".  |
 | flame-eigr.io/pool-config-ref  | "default-pool"   | Flame Pool configuration reference name. See more in the Configuration section.           |
 
-Now you can start scaling your applications with Flame \0/
+Now you can start scaling your applications with [Flame](https://github.com/phoenixframework/flame)... with a little help from [eigr](https://github.com/eigr) \0/
 
 ## Configuration
 
