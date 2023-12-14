@@ -81,8 +81,8 @@ See what each annotation means in the following table:
 
 | Annotation                     | Default          | Detail        |
 | ------------------------------ | -----------------| ------------- | 
-| flame-eigr.io/enabled          | "false"          | Enable flame. |
-| flame-eigr.io/dist-auto-config | "false"          | Configure RELEASE_DISTRIBUTION and RELEASE_NODE based on otp application name. |
+| flame-eigr.io/enabled          | "false"          | Enable Flame. |
+| flame-eigr.io/dist-auto-config | "false"          | Auto configure RELEASE_DISTRIBUTION and RELEASE_NODE based on otp application name. |
 | flame-eigr.io/otp-app          |                  | Application release name. Required if dist-auto-config is set to "true".  |
 | flame-eigr.io/pool-config-ref  | "default-pool"   | Flame Pool configuration file name. See more in the Configuration section.           |
 
