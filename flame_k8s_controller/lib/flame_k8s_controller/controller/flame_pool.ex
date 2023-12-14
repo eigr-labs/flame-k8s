@@ -1,9 +1,9 @@
-defmodule FlameK8sController.Controller.FlameRunner do
+defmodule FlameK8sController.Controller.FlamePool do
   use Bonny.ControllerV2
   require Bonny.API.CRD
 
   step(Bonny.Pluggable.SkipObservedGenerations)
-  step(FlameK8sController.Handler.FlameRunnerHandler)
+  step(FlameK8sController.Handler.FlamePoolHandler)
 
   def rbac_rules() do
     [
