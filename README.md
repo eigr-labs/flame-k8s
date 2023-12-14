@@ -79,12 +79,13 @@ template:
 
 See what each annotation means in the following table:
 
-| Annotation                     | Default          | Detail        |
-| ------------------------------ | -----------------| ------------- | 
-| flame-eigr.io/enabled          | "false"          | Enable Flame. |
-| flame-eigr.io/dist-auto-config | "false"          | Auto configure RELEASE_DISTRIBUTION and RELEASE_NODE based on otp application name. |
-| flame-eigr.io/otp-app          |                  | Application release name. Required if dist-auto-config is set to "true".  |
-| flame-eigr.io/pool-config-ref  | "default-pool"   | Flame Pool configuration reference name. See more in the Configuration section.           |
+| Annotation                               | Default          | Detail        |
+| ---------------------------------------- | -----------------| ------------- | 
+| flame-eigr.io/enabled                    | "false"          | Enable Flame. |
+| flame-eigr.io/dist-auto-config           | "false"          | Auto configure RELEASE_DISTRIBUTION and RELEASE_NODE based on otp application name.             |
+| flame-eigr.io/otp-app                    |                  | Application release name. Required if dist-auto-config is set to "true".  |
+| flame-eigr.io/pool-config-ref            | "default-pool"   | Flame Pool configuration reference name. See more in the Configuration section.           |
+| flame-eigr.io/runner-termination-timeout | 60000            | Timeout in milliseconds that the Runner will have to finish before the controller sends the POD delete command.
 
 Now you can start scaling your applications with [Flame](https://github.com/phoenixframework/flame)... with a little help from [eigr](https://github.com/eigr) \0/
 

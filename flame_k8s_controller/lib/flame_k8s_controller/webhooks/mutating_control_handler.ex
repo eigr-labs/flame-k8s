@@ -45,6 +45,9 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
     annotations = Map.get(metadata, "annotations", %{})
     pool_cfg_ref = Map.get(annotations, "flame-eigr.io/pool-config-ref", "default-pool")
 
+    timeout_to_shoot_headhead =
+      Map.get(annotations, "flame-eigr.io/runner-termination-timeout", 60000)
+
     container =
       spec
       |> Map.get("template", %{})
@@ -68,7 +71,7 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
           "valueFrom" => %{"fieldRef" => %{"fieldPath" => "metadata.namespace"}}
         },
         %{"name" => "POD_IP", "valueFrom" => %{"fieldRef" => %{"fieldPath" => "status.podIP"}}},
-        %{"name" => "POD_TERMINATION_TIMEOUT", "value" => 60000},
+        %{"name" => "POD_TERMINATION_TIMEOUT", "value" => timeout_to_shoot_headhead},
         %{"name" => "FLAME_POOL_CONFIG_REF", "value" => pool_cfg_ref}
       ]
       |> maybe_put_distribution(annotations)
