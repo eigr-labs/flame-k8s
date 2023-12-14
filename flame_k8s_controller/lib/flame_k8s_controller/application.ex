@@ -4,7 +4,7 @@ defmodule FlameK8sController.Application do
 
   require Logger
 
-  @port 9090
+  @port 9001
 
   def start(_type, args) do
     env = Keyword.get(args, :env, :dev)

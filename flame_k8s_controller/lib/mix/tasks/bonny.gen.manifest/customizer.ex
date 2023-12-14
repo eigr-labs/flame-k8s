@@ -17,7 +17,120 @@ defmodule Mix.Tasks.Bonny.Gen.Manifest.FlameK8sControllerCustomizer do
   end
   """
 
+  import YamlElixir.Sigil
+
   @spec override(Bonny.Resource.t()) :: Bonny.Resource.t()
+
+  def override(%{"kind" => "Deployment"} = resource) do
+    image =
+      get_in(
+        resource,
+        [
+          "spec",
+          "template",
+          "spec",
+          "containers",
+          Access.filter(&(&1["name"] == "flame-controller")),
+          "image"
+        ]
+      )
+      |> List.first()
+
+    resource
+    |> update_in(
+      ["spec", "template", "spec", Access.key("volumes", [])],
+      &[%{"name" => "certs", "secret" => %{"secretName" => "tls-certs", "optional" => true}} | &1]
+    )
+    |> put_in(
+      [
+        "spec",
+        "template",
+        "spec",
+        "containers",
+        Access.all(),
+        "securityContext",
+        "runAsUser"
+      ],
+      1001
+    )
+    |> update_in(
+      [
+        "spec",
+        "template",
+        "spec",
+        "containers",
+        Access.filter(&(&1["name"] == "flame-controller")),
+        Access.key("volumeMounts", [])
+      ],
+      &[%{"name" => "certs", "mountPath" => "/mnt/cert"} | &1]
+    )
+    |> update_in(
+      [
+        "spec",
+        "template",
+        "spec",
+        Access.key("initContainers", [])
+      ],
+      fn init_containers ->
+        certs = %{
+          "name" => "init-certificates",
+          "image" => image,
+          "args" => ["eval", ~s|FlameK8sController.Webhooks.bootstrap_tls(:prod, "tls-certs")|]
+        }
+
+        [certs | init_containers]
+      end
+    )
+    |> put_in(
+      [
+        "spec",
+        "template",
+        "spec",
+        "containers",
+        Access.filter(&(&1["name"] == "flame-controller")),
+        "ports"
+      ],
+      [%{"containerPort" => 9001, "name" => "webhooks"}]
+    )
+  end
+
+  def override(%{"kind" => "ClusterRole"} = resource) do
+    Map.update!(resource, "rules", fn rules ->
+      [
+        ~y"""
+        apiGroups: ["admissionregistration.k8s.io"]
+        resources:
+          - validatingwebhookconfigurations
+          - mutatingwebhookconfigurations
+        verbs: ["get", "list", "update", "patch"]
+        """,
+        ~y"""
+        apiGroups: ["apiextensions.k8s.io"]
+        resources: ["customresourcedefinitions"]
+        verbs: ["get", "list", "update", "patch"]
+        """
+        | rules
+      ]
+    end)
+  end
+
+  def override(%{"kind" => "CustomResourceDefinition"} = resource) do
+    resource
+    |> Map.update!("metadata", fn
+      %{"labels" => labels} = metadata when labels == %{} -> Map.delete(metadata, "labels")
+      metadata -> metadata
+    end)
+    |> update_in(["spec", "versions", Access.all()], fn
+      version ->
+        version
+        |> Enum.reject(fn
+          {"additionalPrinterColumns", []} -> true
+          {"deprecated", false} -> true
+          _ -> false
+        end)
+        |> Map.new()
+    end)
+  end
 
   # fallback
   def override(resource), do: resource
