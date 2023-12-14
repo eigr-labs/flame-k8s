@@ -1,6 +1,6 @@
 # Flame K8s Adapter
 
-Flame k8s Adapter.
+Advanced [Flame](https://github.com/phoenixframework/flame) [k8s](https://kubernetes.io) Adapter basead on [Operator Pattern](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/).
 
 ## Installation
 
