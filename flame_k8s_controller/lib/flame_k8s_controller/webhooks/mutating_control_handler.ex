@@ -42,6 +42,9 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
   end
 
   defp patch_obj(spec, metadata) do
+    annotations = Map.get(metadata, "annotations", %{})
+    pool_cfg_ref = Map.get(annotations, "flame-eigr.io/pool-config-ref", "default-pool")
+
     container =
       spec
       |> Map.get("template", %{})
@@ -65,9 +68,10 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
           "valueFrom" => %{"fieldRef" => %{"fieldPath" => "metadata.namespace"}}
         },
         %{"name" => "POD_IP", "valueFrom" => %{"fieldRef" => %{"fieldPath" => "status.podIP"}}},
-        %{"name" => "POD_TERMINATION_TIMEOUT", "value" => 60000}
+        %{"name" => "POD_TERMINATION_TIMEOUT", "value" => 60000},
+        %{"name" => "FLAME_POOL_CONFIG_REF", "value" => pool_cfg_ref}
       ]
-      |> maybe_put_distribution(metadata)
+      |> maybe_put_distribution(annotations)
 
     updated_envs =
       case Map.get(container, "env") do
@@ -95,9 +99,7 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
     %Conn{conn | response: %{conn.response | patch: patch_obj, patchType: "JSONPatch"}}
   end
 
-  defp maybe_put_distribution(envs, metadata) do
-    annotations = Map.get(metadata, "annotations", %{})
-
+  defp maybe_put_distribution(envs, annotations) do
     auto_dist? = Map.get(annotations, "flame-eigr.io/dist-auto-config", "false") |> to_bool()
 
     updated_envs =

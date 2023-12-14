@@ -15,8 +15,79 @@ def deps do
 end
 ```
 
-> **_NOTE:_** You must have a flame k8s controller installed on your kubernetes cluster for this library to work. Please check the driver documentation [here](https://github.com/eigr-labs/flame-k8s-controller).
+> **_NOTE:_** You need to install our Kubernetes Controller in the Kubernetes where you want to run your application. Follow the instructions below
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/flame_k8s>.
+### Install Kubernetes Controller
+
+TODO
+
+## Usage
+
+Configure the flame backend in our configuration.
+
+```elixir
+# config.exs
+if config_env() == :prod do
+  config :flame, :backend, FLAME.K8sBackend
+  config :flame, FLAME.K8sBackend, log: :debug
+end
+```
+
+You need to enable Flame in Kubernetes as well. See the example below:
+
+```yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flame-parent-example
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flame-parent-example
+  template:
+    metadata:
+      annotations:
+        flame-eigr.io/enabled: "true"
+        flame-eigr.io/dist-auto-config: "true"
+        flame-eigr.io/otp-app: "my_app_release_name"
+    spec:
+      containers:
+        - image: eigr/spawn-operator:1.1.1
+          name: spawn-operator
+          resources:
+            limits:
+              cpu: 200m
+              memory: 200Mi
+            requests:
+              cpu: 200m
+              memory: 200Mi
+```
+
+The most important part is:
+
+```yaml
+template:
+  metadata:
+    annotations:
+      flame-eigr.io/enabled: "true"
+      flame-eigr.io/dist-auto-config: "true"
+      flame-eigr.io/otp-app: "my_app_release_name"
+```
+
+See what each annotation means in the following table:
+
+| Annotation                     | Default          | Detail        |
+| ------------------------------ | -----------------| ------------- | 
+| flame-eigr.io/enabled          | "false"          | Enable flame. |
+| flame-eigr.io/dist-auto-config | "false"          | Configure RELEASE_DISTRIBUTION and RELEASE_NODE based on otp application name. |
+| flame-eigr.io/otp-app          |                  | Application release name. Required if dist-auto-config is set to "true".  |
+| flame-eigr.io/pool-config-ref  | "default-pool"   | Flame Pool configuration file name. See more in the Configuration section.           |
+
+Now you can start scaling your applications with Flame \0/
+
+## Configuration
+
+TODO
