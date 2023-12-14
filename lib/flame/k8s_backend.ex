@@ -8,6 +8,9 @@ defmodule FLAME.K8sBackend do
 
   @behaviour FLAME.Backend
 
+  @controller_fqdn "flame-controller.flame.svc.cluster.local"
+  @controller_port 9090
+
   defstruct base_pod: nil,
             boot_timeout: nil,
             container_name: nil,
@@ -33,8 +36,8 @@ defmodule FLAME.K8sBackend do
 
     default = %K8sBackend{
       boot_timeout: 30_000,
-      controller_fqdn: "flame-controller.flame.svc.cluster.local",
-      controller_port: 9090,
+      controller_fqdn: @controller_fqdn,
+      controller_port: @controller_port,
       runner_node_basename: node_base
     }
 
@@ -139,27 +142,6 @@ defmodule FLAME.K8sBackend do
     {:ok, remote_terminator_pid, new_state}
   end
 
-  defp build_runner_pod_request(state) do
-    %{base_pod: base_pod, env: env} = state
-
-    pod_name_sliced = base_pod |> get_in(~w(metadata name)) |> String.slice(0..40)
-    runner_pod_name = pod_name_sliced <> rand_id(20)
-
-    container_access =
-      case state.container_name do
-        nil -> []
-        name -> [Access.filter(&(&1["name"] == name))]
-      end
-
-    base_container = base_pod |> get_in(["spec", "containers" | container_access]) |> List.first()
-
-    %{}
-  end
-
-  defp provision_runner(runner_req) do
-    {:ok, %{}}
-  end
-
   @impl true
   def remote_spawn_monitor(%K8sBackend{} = state, term) do
     case term do
@@ -178,8 +160,16 @@ defmodule FLAME.K8sBackend do
   end
 
   @impl true
-  def system_shutdown do
-    System.stop()
+  def system_shutdown() do
+    case call_shutdown_runner() do
+      {:ok, :ending} ->
+        Logger.debug("POD cleaning scheduled successfully")
+        System.stop()
+
+      _ ->
+        Logger.warning("Unable to schedule POD cleaning")
+        System.stop()
+    end
   end
 
   @impl true
@@ -208,6 +198,35 @@ defmodule FLAME.K8sBackend do
     task = Task.async(fn -> do_loop(func, func.()) end)
 
     Task.await(task, timeout)
+  end
+
+  defp build_runner_pod_request(state) do
+    %{base_pod: base_pod, env: env} = state
+
+    pod_name_sliced = base_pod |> get_in(~w(metadata name)) |> String.slice(0..40)
+    runner_pod_name = pod_name_sliced <> rand_id(20)
+
+    container_access =
+      case state.container_name do
+        nil -> []
+        name -> [Access.filter(&(&1["name"] == name))]
+      end
+
+    base_container = base_pod |> get_in(["spec", "containers" | container_access]) |> List.first()
+
+    %{}
+  end
+
+  defp provision_runner(runner_req) do
+    {:ok, %{}}
+  end
+
+  defp call_shutdown_runner() do
+    name = System.get_env("POD_NAME")
+    namespace = System.get_env("POD_NAMESPACE")
+    time_limit_to_shoot_headhead = System.get_env("POD_TERMINATION_TIMEOUT")
+    # TODO Send signal to controller to cleanup pod after terminationShutdownPeriod timeout
+    # calling "/v1/runners/:namespace/:name" endpoint in the controller service
   end
 
   defp do_loop(_func, {:ok, term}), do: {:ok, term}

@@ -19,7 +19,7 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
 
     resp =
       if is_flame_enabled?(metadata) do
-        create_patch(conn, patch_obj(spec))
+        create_patch(conn, patch_obj(spec, metadata))
       else
         conn
       end
@@ -41,7 +41,7 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
     Map.get(annotations, "flame-eigr.io/enabled", "false") |> to_bool()
   end
 
-  defp patch_obj(spec) do
+  defp patch_obj(spec, metadata) do
     container =
       spec
       |> Map.get("template", %{})
@@ -53,15 +53,21 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
       Jason.encode!(spec.template)
       |> Base.encode64()
 
-    envs = [
-      %{"name" => "BASE_POD", "value" => base_pod},
-      %{"name" => "POD_NAME", "valueFrom" => %{"fieldRef" => %{"fieldPath" => "metadata.name"}}},
-      %{
-        "name" => "POD_NAMESPACE",
-        "valueFrom" => %{"fieldRef" => %{"fieldPath" => "metadata.namespace"}}
-      },
-      %{"name" => "POD_IP", "valueFrom" => %{"fieldRef" => %{"fieldPath" => "status.podIP"}}}
-    ]
+    envs =
+      [
+        %{"name" => "BASE_POD", "value" => base_pod},
+        %{
+          "name" => "POD_NAME",
+          "valueFrom" => %{"fieldRef" => %{"fieldPath" => "metadata.name"}}
+        },
+        %{
+          "name" => "POD_NAMESPACE",
+          "valueFrom" => %{"fieldRef" => %{"fieldPath" => "metadata.namespace"}}
+        },
+        %{"name" => "POD_IP", "valueFrom" => %{"fieldRef" => %{"fieldPath" => "status.podIP"}}},
+        %{"name" => "POD_TERMINATION_TIMEOUT", "value" => 60000}
+      ]
+      |> maybe_put_distribution(metadata)
 
     updated_envs =
       case Map.get(container, "env") do
@@ -87,6 +93,32 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
 
   defp create_patch(conn, patch_obj) do
     %Conn{conn | response: %{conn.response | patch: patch_obj, patchType: "JSONPatch"}}
+  end
+
+  defp maybe_put_distribution(envs, metadata) do
+    annotations = Map.get(metadata, "annotations", %{})
+
+    auto_dist? = Map.get(annotations, "flame-eigr.io/dist-auto-config", "false") |> to_bool()
+
+    updated_envs =
+      if auto_dist? do
+        case Map.get(annotations, "flame-eigr.io/otp-app", nil) do
+          nil ->
+            envs
+
+          app ->
+            (envs ++
+               [
+                 %{"name" => "RELEASE_DISTRIBUTION", "value" => "name"},
+                 %{"name" => "RELEASE_NODE", "value" => "#{app}@$(POD_IP)"}
+               ])
+            |> List.flatten()
+        end
+      else
+        envs
+      end
+
+    updated_envs
   end
 
   def to_bool("true"), do: true
