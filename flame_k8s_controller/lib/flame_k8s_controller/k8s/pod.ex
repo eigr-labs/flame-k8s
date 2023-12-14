@@ -27,7 +27,7 @@ defmodule FlameK8sController.K8s.Pod do
           %{
             "image" => spec.image,
             "name" => name,
-            "resources" => spec.resources,
+            "resources" => spec.runnerTemplate.resources,
             "env" => spec.env
           }
         ]
