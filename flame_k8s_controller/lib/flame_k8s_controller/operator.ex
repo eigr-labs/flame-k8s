@@ -20,6 +20,10 @@ defmodule FlameK8sController.Operator do
       %{
         query: K8s.Client.watch("flame.org/v1", "FlameRunner", namespace: watching_namespace),
         controller: FlameK8sController.Controller.FlameRunner
+      },
+      %{
+        query: K8s.Client.watch("flame.org/v1", "FlamePool", namespace: watching_namespace),
+        controller: FlameK8sController.Controller.FlamePool
       }
     ]
   end
@@ -35,6 +39,18 @@ defmodule FlameK8sController.Operator do
             "flamerunners",
             "runner",
             "runners"
+          ]),
+        group: "flame.org",
+        scope: :Namespaced,
+        versions: [FlameK8sController.Versions.Api.V1.FlameRunner]
+      ),
+      Bonny.API.CRD.new!(
+        names:
+          Bonny.API.CRD.kind_to_names("FlamePool", [
+            "framepool",
+            "framepools",
+            "pool",
+            "pools"
           ]),
         group: "flame.org",
         scope: :Namespaced,

@@ -36,6 +36,7 @@ end
 You need to enable Flame in Kubernetes as well. See the example below:
 
 ```yaml
+# my-application.yaml
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -55,8 +56,8 @@ spec:
         flame.org/otp-app: "my_app_release_name"
     spec:
       containers:
-        - image: eigr/spawn-operator:1.1.1
-          name: spawn-operator
+        - image: eigr/flame-parent-example:1.1.1
+          name: flame-parent-example
           resources:
             limits:
               cpu: 200m
@@ -92,3 +93,76 @@ Now you can start scaling your applications with [Flame](https://github.com/phoe
 ## Configuration
 
 TODO
+
+### 1. Flame Runner Pool
+
+The Flame k8s Controller gives you the possibility to configure different runner profiles. These profiles will be used when creating PODs to run Runners in Kubernetes.
+To configure a new Runner Pool, simply define the following yaml file and apply it to the Kubernetes cluster.
+
+```yaml
+# my-runner.yaml
+---
+  apiVersion: flame.org/v1
+  kind: FlamePool
+  metadata:
+    name: my-runner-pool
+    namespace: default
+  spec:
+    podTemplate:
+      spec: # This is a pod template specification. See https://kubernetes.io/docs/concepts/workloads/pods/#pod-templates
+        containers:
+          - env:
+              - name: MY_VAR
+                value: "my-value"
+            resources:
+              limits:
+                cpu: 200m
+                memory: 1Gi
+              requests:
+                cpu: 200m
+                memory: 2Gi
+            volumeMounts:
+              - mountPath: /app/.cache/bakeware/
+                name: bakeware-cache
+        volumes:
+          - name: bakeware-cache
+            emptyDir: {}
+```
+
+Then:
+
+```sh
+kubectl apply -f my-runner.yaml
+```
+
+Once this is done, simply add the annotation `flame.org/pool-config-ref` to your Deployment file. Example:
+
+```yaml
+# my-application.yaml
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flame-parent-example
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flame-parent-example
+  template:
+    metadata:
+      annotations:
+        flame.org/enabled: "true"
+        flame.org/pool-config-ref: "my-runner-pool"
+    spec:
+      containers:
+        - image: eigr/flame-parent-example:1.1.1
+...        
+```
+
+You can also list all Runner pools configured on the system with the command:
+
+```sh
+kubectl --all-namespaces get pools
+```
