@@ -166,3 +166,40 @@ You can also list all Runner pools configured on the system with the command:
 ```sh
 kubectl --all-namespaces get pools
 ```
+
+The controller also defines a default Pool which in turn has the following configuration:
+
+```yaml
+---
+apiVersion: flame.org/v1
+kind: FlamePool
+metadata:
+  name: default-pool
+  namespace: flame
+spec:
+  podTemplate:
+    spec:
+      containers:
+        - env:
+          - name: PHX_SERVER
+            value: "false"
+          - name: MIX_ENV
+            value: prod
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          # Other vars...
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+```
