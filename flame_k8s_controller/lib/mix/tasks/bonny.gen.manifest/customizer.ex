@@ -21,6 +21,8 @@ defmodule Mix.Tasks.Bonny.Gen.Manifest.FlameK8sControllerCustomizer do
 
   @spec override(Bonny.Resource.t()) :: Bonny.Resource.t()
   def override(%{"kind" => "Deployment"} = resource) do
+    IO.inspect(resource, label: "Customizer Overrides")
+
     image =
       get_in(
         resource,
@@ -38,7 +40,10 @@ defmodule Mix.Tasks.Bonny.Gen.Manifest.FlameK8sControllerCustomizer do
     resource
     |> update_in(
       ["spec", "template", "spec", Access.key("volumes", [])],
-      &[%{"name" => "certs", "secret" => %{"secretName" => "tls-certs", "optional" => true}} | &1]
+      &[
+        %{"name" => "certs", "secret" => %{"secretName" => "tls-certs", "optional" => true}}
+        | &1
+      ]
     )
     |> put_in(
       [
@@ -94,6 +99,8 @@ defmodule Mix.Tasks.Bonny.Gen.Manifest.FlameK8sControllerCustomizer do
   end
 
   def override(%{"kind" => "ClusterRole"} = resource) do
+    IO.inspect(resource, label: "Customizer Overrides")
+
     Map.update!(resource, "rules", fn rules ->
       [
         ~y"""
@@ -114,6 +121,8 @@ defmodule Mix.Tasks.Bonny.Gen.Manifest.FlameK8sControllerCustomizer do
   end
 
   def override(%{"kind" => "CustomResourceDefinition"} = resource) do
+    IO.inspect(resource, label: "Customizer Overrides")
+
     resource
     |> Map.update!("metadata", fn
       %{"labels" => labels} = metadata when labels == %{} -> Map.delete(metadata, "labels")
@@ -132,5 +141,5 @@ defmodule Mix.Tasks.Bonny.Gen.Manifest.FlameK8sControllerCustomizer do
   end
 
   # fallback
-  def override(resource), do: resource
+  def override(resource), do: IO.inspect(resource, label: "Customizer Overrides")
 end

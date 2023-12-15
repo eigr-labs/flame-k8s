@@ -48,7 +48,7 @@ create-k8s-namespace:
 	kubectl create ns flame
 
 generate-k8s-manifests:
-	cd flame_k8s_controller && MIX_ENV=prod mix deps.get && MIX_ENV=prod mix bonny.gen.manifest --image ${operator-image} --namespace flame
+	cd flame_k8s_controller && MIX_ENV=prod mix deps.get && MIX_ENV=prod mix flame.gen.manifest --image ${operator-image} --namespace flame --out ../.k8s/install/manifests
 
 apply-k8s-manifests:
 	kubectl -n flame apply -f flame_k8s_controller/manifest.yaml
