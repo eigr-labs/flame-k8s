@@ -19,10 +19,7 @@ build:
 build-operator-image:
 	docker build --no-cache -f Dockerfile-operator -t ${operator-image} .
 
-build-all-images:
-	docker build --no-cache -f Dockerfile-operator -t ${operator-image} .
-
-test-spawn:
+test:
 	MIX_ENV=test elixir --name flame_k8s@127.0.0.1 -S mix test
 
 test-operator:

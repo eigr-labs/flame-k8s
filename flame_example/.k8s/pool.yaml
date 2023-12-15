@@ -1,0 +1,26 @@
+---
+apiVersion: flame.org/v1
+kind: FlamePool
+metadata:
+  name: custom-pool-example
+  namespace: default
+spec:
+  podTemplate:
+    spec:
+      containers:
+        - env:
+            - name: MY_VAR
+              value: "my-value"
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
+              cpu: 200m
+              memory: 2Gi
+          volumeMounts:
+            - mountPath: /app/.cache/bakeware/
+              name: bakeware-cache
+      volumes:
+        - name: bakeware-cache
+          emptyDir: {}

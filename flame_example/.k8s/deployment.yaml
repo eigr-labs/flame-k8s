@@ -1,0 +1,35 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flame-parent-example
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flame-parent-example
+  template:
+    metadata:
+      annotations:
+        flame.org/enabled: "true"
+        flame.org/dist-auto-config: "true"
+        flame.org/otp-app: "flame_example"
+        flame.org/pool-config-ref: "custom-pool-example"
+    spec:
+      containers:
+        - image: eigr/flame-parent-example:1.1.1
+          name: flame-parent-example
+          resources:
+            limits:
+              cpu: 200m
+              memory: 200Mi
+            requests:
+              cpu: 200m
+              memory: 200Mi
+          volumeMounts:
+            - mountPath: /app/.cache/bakeware/
+              name: bakeware-cache
+      volumes:
+        - name: bakeware-cache
+          emptyDir: {}
