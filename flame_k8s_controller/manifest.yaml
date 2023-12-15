@@ -1,0 +1,284 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    k8s-app: flame-controller
+  name: flame-controller
+  namespace: flame
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: flame-controller
+  template:
+    metadata:
+      labels:
+        k8s-app: flame-controller
+    spec:
+      containers:
+        - env:
+            - name: MIX_ENV
+              value: prod
+            - name: BONNY_OPERATOR_NAME
+              value: flame-controller
+            - name: BONNY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: BONNY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: BONNY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: BONNY_POD_SERVICE_ACCOUNT
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.serviceAccountName
+          image: eigr/flame-k8s-controller:0.1.0
+          name: flame-controller
+          resources:
+            limits:
+              cpu: 200m
+              memory: 200Mi
+            requests:
+              cpu: 200m
+              memory: 200Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 65534
+      serviceAccountName: flame-controller
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  labels:
+    k8s-app: flame-controller
+  name: flamerunners.flame.org
+spec:
+  group: flame.org
+  names:
+    kind: FlameRunner
+    plural: flamerunners
+    shortNames:
+      - fr
+      - flamerunner
+      - flamerunners
+      - runner
+      - runners
+    singular: flamerunner
+  scope: Namespaced
+  versions:
+    - additionalPrinterColumns: []
+      deprecated: false
+      deprecationWarning:
+      name: v1
+      schema:
+        openAPIV3Schema:
+          properties:
+            status:
+              properties:
+                observedGeneration:
+                  type: integer
+              type: object
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      served: true
+      storage: true
+      subresources:
+        status: {}
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  labels:
+    k8s-app: flame-controller
+  name: flamepools.flame.org
+spec:
+  group: flame.org
+  names:
+    kind: FlamePool
+    plural: flamepools
+    shortNames:
+      - framepool
+      - framepools
+      - pool
+      - pools
+    singular: flamepool
+  scope: Namespaced
+  versions:
+    - additionalPrinterColumns: []
+      deprecated: false
+      deprecationWarning:
+      name: v1
+      schema:
+        openAPIV3Schema:
+          properties:
+            status:
+              properties:
+                observedGeneration:
+                  type: integer
+              type: object
+          type: object
+          x-kubernetes-preserve-unknown-fields: true
+      served: true
+      storage: true
+      subresources:
+        status: {}
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    k8s-app: flame-controller
+  name: flame-controller
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - '*'
+  - apiGroups:
+      - ""
+    resources:
+      - node
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - ""
+    resources:
+      - nodes
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - '*'
+  - apiGroups:
+      - ""
+    resources:
+      - secrets
+    verbs:
+      - '*'
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccount
+    verbs:
+      - '*'
+  - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts
+    verbs:
+      - '*'
+  - apiGroups:
+      - ""
+    resources:
+      - services
+    verbs:
+      - '*'
+  - apiGroups:
+      - apiextensions.k8s.io
+    resources:
+      - customresourcedefinitions
+    verbs:
+      - '*'
+  - apiGroups:
+      - apps
+    resources:
+      - deployments
+    verbs:
+      - '*'
+  - apiGroups:
+      - coordination.k8s.io
+    resources:
+      - leases
+    verbs:
+      - '*'
+  - apiGroups:
+      - events.k8s.io
+    resources:
+      - events
+    verbs:
+      - '*'
+  - apiGroups:
+      - flame.org
+    resources:
+      - flamepools
+    verbs:
+      - '*'
+  - apiGroups:
+      - flame.org
+    resources:
+      - flamepools/status
+    verbs:
+      - '*'
+  - apiGroups:
+      - flame.org
+    resources:
+      - flamerunners
+    verbs:
+      - '*'
+  - apiGroups:
+      - flame.org
+    resources:
+      - flamerunners/status
+    verbs:
+      - '*'
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - role
+    verbs:
+      - '*'
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - rolebindings
+    verbs:
+      - '*'
+  - apiGroups:
+      - rbac.authorization.k8s.io
+    resources:
+      - roles
+    verbs:
+      - '*'
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    k8s-app: flame-controller
+  name: flame-controller
+  namespace: flame
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    k8s-app: flame-controller
+  name: flame-controller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: flame-controller
+subjects:
+  - kind: ServiceAccount
+    name: flame-controller
+    namespace: flame

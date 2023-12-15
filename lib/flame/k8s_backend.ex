@@ -222,11 +222,13 @@ defmodule FLAME.K8sBackend do
   end
 
   defp call_shutdown_runner() do
-    name = System.get_env("POD_NAME")
-    namespace = System.get_env("POD_NAMESPACE")
-    time_limit_to_shoot_headhead = System.get_env("POD_TERMINATION_TIMEOUT")
+    _name = System.get_env("POD_NAME")
+    _namespace = System.get_env("POD_NAMESPACE")
+    _time_limit_to_shoot_headhead = System.get_env("POD_TERMINATION_TIMEOUT")
+
     # TODO Send signal to controller to cleanup pod after terminationShutdownPeriod timeout
     # calling "/v1/runners/:namespace/:name" endpoint in the controller service
+    {:ok, :ending}
   end
 
   defp do_loop(_func, {:ok, term}), do: {:ok, term}

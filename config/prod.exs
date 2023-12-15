@@ -23,5 +23,7 @@ config :bonny,
 
   # Operator deployment resources. These are the defaults.
   resources: %{limits: %{cpu: "200m", memory: "200Mi"}, requests: %{cpu: "200m", memory: "200Mi"}},
+
+  # Overrides default manifest
   manifest_override_callback:
     &Mix.Tasks.Bonny.Gen.Manifest.FlameK8sControllerCustomizer.override/1

@@ -20,7 +20,6 @@ defmodule Mix.Tasks.Bonny.Gen.Manifest.FlameK8sControllerCustomizer do
   import YamlElixir.Sigil
 
   @spec override(Bonny.Resource.t()) :: Bonny.Resource.t()
-
   def override(%{"kind" => "Deployment"} = resource) do
     image =
       get_in(
