@@ -82,7 +82,7 @@ See what each annotation means in the following table:
 
 | Annotation                           | Default          | Detail        |
 | -------------------------------------| -----------------| ------------- | 
-| flame.org/enabled                    | "false"          | Enable Flame. |
+| flame.org/enabled                    | "false"          | Enable or Disable Flame. |
 | flame.org/dist-auto-config           | "false"          | Auto configure RELEASE_DISTRIBUTION and RELEASE_NODE based on otp application name.             |
 | flame.org/otp-app                    |                  | Application release name. Required if dist-auto-config is set to "true".  |
 | flame.org/pool-config-ref            | "default-pool"   | Flame Pool configuration reference name. See more in the Configuration section.           |
