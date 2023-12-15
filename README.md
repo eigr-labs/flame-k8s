@@ -102,31 +102,31 @@ To configure a new Runner Pool, simply define the following yaml file and apply 
 ```yaml
 # my-runner.yaml
 ---
-  apiVersion: flame.org/v1
-  kind: FlamePool
-  metadata:
-    name: my-runner-pool
-    namespace: default
-  spec:
-    podTemplate:
-      spec: # This is a pod template specification. See https://kubernetes.io/docs/concepts/workloads/pods/#pod-templates
-        containers:
-          - env:
-              - name: MY_VAR
-                value: "my-value"
-            resources:
-              limits:
-                cpu: 200m
-                memory: 1Gi
-              requests:
-                cpu: 200m
-                memory: 2Gi
-            volumeMounts:
-              - mountPath: /app/.cache/bakeware/
-                name: bakeware-cache
-        volumes:
-          - name: bakeware-cache
-            emptyDir: {}
+apiVersion: flame.org/v1
+kind: FlamePool
+metadata:
+  name: my-runner-pool
+  namespace: default
+spec:
+  podTemplate:
+    spec: # This is a pod template specification. See https://kubernetes.io/docs/concepts/workloads/pods/#pod-templates
+      containers:
+        - env:
+            - name: MY_VAR
+              value: "my-value"
+          resources:
+            limits:
+              cpu: 200m
+              memory: 1Gi
+            requests:
+              cpu: 200m
+              memory: 2Gi
+          volumeMounts:
+            - mountPath: /app/.cache/bakeware/
+              name: bakeware-cache
+      volumes:
+        - name: bakeware-cache
+          emptyDir: {}
 ```
 
 Then:
