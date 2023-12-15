@@ -6,7 +6,7 @@ config :bonny,
   get_conn: {FlameK8sController.K8sConn, :get!, [config_env()]},
 
   # Set the Kubernetes API group for this operator.
-  group: "flame-eigr.io",
+  group: "flame.org",
 
   # Name must only consist of only lowercase letters and hyphens.
   # Defaults to hyphenated mix app name

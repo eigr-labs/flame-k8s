@@ -2,7 +2,7 @@ defmodule FlameK8sController.Handler.FlamePoolHandler do
   @moduledoc """
 
   ---
-  apiVersion: flame-eigr.io/v1
+  apiVersion: flame.org/v1
   kind: FlamePool
   metadata:
     name: my-runner-pool

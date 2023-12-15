@@ -2,7 +2,7 @@ defmodule FlameK8sController.Handler.FlameRunnerHandler do
   @moduledoc """
 
   ---
-  apiVersion: flame-eigr.io/v1
+  apiVersion: flame.org/v1
   kind: FlameRunner
   metadata:
     name: my-runner

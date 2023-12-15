@@ -38,15 +38,15 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
 
   defp is_flame_enabled?(metadata) do
     annotations = Map.get(metadata, "annotations", %{})
-    Map.get(annotations, "flame-eigr.io/enabled", "false") |> to_bool()
+    Map.get(annotations, "flame.org/enabled", "false") |> to_bool()
   end
 
   defp patch_obj(spec, metadata) do
     annotations = Map.get(metadata, "annotations", %{})
-    pool_cfg_ref = Map.get(annotations, "flame-eigr.io/pool-config-ref", "default-pool")
+    pool_cfg_ref = Map.get(annotations, "flame.org/pool-config-ref", "default-pool")
 
     timeout_to_shoot_headhead =
-      Map.get(annotations, "flame-eigr.io/runner-termination-timeout", 60000)
+      Map.get(annotations, "flame.org/runner-termination-timeout", 60000)
 
     container =
       spec
@@ -103,11 +103,11 @@ defmodule FlameK8sController.Webhooks.MutatingControlHandler do
   end
 
   defp maybe_put_distribution(envs, annotations) do
-    auto_dist? = Map.get(annotations, "flame-eigr.io/dist-auto-config", "false") |> to_bool()
+    auto_dist? = Map.get(annotations, "flame.org/dist-auto-config", "false") |> to_bool()
 
     updated_envs =
       if auto_dist? do
-        case Map.get(annotations, "flame-eigr.io/otp-app", nil) do
+        case Map.get(annotations, "flame.org/otp-app", nil) do
           nil ->
             envs
 

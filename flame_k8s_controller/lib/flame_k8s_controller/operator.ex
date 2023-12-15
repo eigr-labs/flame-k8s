@@ -18,7 +18,7 @@ defmodule FlameK8sController.Operator do
   def controllers(watching_namespace, _opts) do
     [
       %{
-        query: K8s.Client.watch("flame-eigr.io/v1", "FlameRunner", namespace: watching_namespace),
+        query: K8s.Client.watch("flame.org/v1", "FlameRunner", namespace: watching_namespace),
         controller: FlameK8sController.Controller.FlameRunner
       }
     ]
@@ -36,7 +36,7 @@ defmodule FlameK8sController.Operator do
             "runner",
             "runners"
           ]),
-        group: "flame-eigr.io",
+        group: "flame.org",
         scope: :Namespaced,
         versions: [FlameK8sController.Versions.Api.V1.FlameRunner]
       )

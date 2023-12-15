@@ -50,9 +50,9 @@ spec:
   template:
     metadata:
       annotations:
-        flame-eigr.io/enabled: "true"
-        flame-eigr.io/dist-auto-config: "true"
-        flame-eigr.io/otp-app: "my_app_release_name"
+        flame.org/enabled: "true"
+        flame.org/dist-auto-config: "true"
+        flame.org/otp-app: "my_app_release_name"
     spec:
       containers:
         - image: eigr/spawn-operator:1.1.1
@@ -72,20 +72,20 @@ The most important part is:
 template:
   metadata:
     annotations:
-      flame-eigr.io/enabled: "true"
-      flame-eigr.io/dist-auto-config: "true"
-      flame-eigr.io/otp-app: "my_app_release_name"
+      flame.org/enabled: "true"
+      flame.org/dist-auto-config: "true"
+      flame.org/otp-app: "my_app_release_name"
 ```
 
 See what each annotation means in the following table:
 
-| Annotation                               | Default          | Detail        |
-| ---------------------------------------- | -----------------| ------------- | 
-| flame-eigr.io/enabled                    | "false"          | Enable Flame. |
-| flame-eigr.io/dist-auto-config           | "false"          | Auto configure RELEASE_DISTRIBUTION and RELEASE_NODE based on otp application name.             |
-| flame-eigr.io/otp-app                    |                  | Application release name. Required if dist-auto-config is set to "true".  |
-| flame-eigr.io/pool-config-ref            | "default-pool"   | Flame Pool configuration reference name. See more in the Configuration section.           |
-| flame-eigr.io/runner-termination-timeout | 60000            | Timeout in milliseconds that the Runner will have to finish before the controller sends the POD delete command.
+| Annotation                           | Default          | Detail        |
+| -------------------------------------| -----------------| ------------- | 
+| flame.org/enabled                    | "false"          | Enable Flame. |
+| flame.org/dist-auto-config           | "false"          | Auto configure RELEASE_DISTRIBUTION and RELEASE_NODE based on otp application name.             |
+| flame.org/otp-app                    |                  | Application release name. Required if dist-auto-config is set to "true".  |
+| flame.org/pool-config-ref            | "default-pool"   | Flame Pool configuration reference name. See more in the Configuration section.           |
+| flame.org/runner-termination-timeout | 60000            | Timeout in milliseconds that the Runner will have to finish before the controller sends the POD delete command.
 
 Now you can start scaling your applications with [Flame](https://github.com/phoenixframework/flame)... with a little help from [eigr](https://github.com/eigr) \0/
 
