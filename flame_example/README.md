@@ -1,21 +1,9 @@
-# FlameExample
+# Flame Example
 
-**TODO: Add description**
+Example of a Flame application using the flame_k8s backend based on the Operator Pattern.
 
-## Installation
+## Installation and Run
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `flame_example` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:flame_example, "~> 0.1.0"}
-  ]
-end
+```sh
+$ make all
 ```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/flame_example>.
-

@@ -5,7 +5,7 @@ image=${registry}/flame-parent-example:${version}
 
 .PHONY: all
 
-all: clean-all build build-image create-kind-cluster create-k8s-namespace load-kind-images
+all: clean-all build build-image create-kind-cluster create-k8s-namespace load-kind-images apply-k8s-manifests
 
 clean:
 	mix deps.clean --all
@@ -31,3 +31,7 @@ load-kind-images:
 
 create-k8s-namespace:
 	kubectl create ns flame
+
+apply-k8s-manifests:
+	kubectl -n flame apply -f .k8s/pool.yaml
+	kubectl -n flame apply -f .k8s/deployment.yaml
