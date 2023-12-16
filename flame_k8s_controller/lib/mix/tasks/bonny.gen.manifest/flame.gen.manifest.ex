@@ -151,7 +151,8 @@ defmodule Mix.Tasks.Flame.Gen.Manifest do
         Operator.cluster_role(operators),
         Operator.service_account(namespace),
         Operator.cluster_role_binding(namespace),
-        default_flame_pool(namespace)
+        default_flame_pool(namespace),
+        kustomize(namespace)
       ]
   end
 
@@ -247,6 +248,25 @@ defmodule Mix.Tasks.Flame.Gen.Manifest do
                 requests:
                   cpu: 50m
                   memory: 128Mi
+    """
+  end
+
+  @spec kustomize(namespace :: binary()) :: map()
+  defp kustomize(_namespace) do
+    ~y"""
+    apiVersion: kustomize.config.k8s.io/v1beta1
+    kind: Kustomization
+    resources:
+      - namespace.yaml
+      - serviceaccount.yaml
+      - clusterrole.yaml
+      - clusterrolebinding.yaml
+      - flamepool.crd.yaml
+      - flamerunner.crd.yaml
+      - service.yaml
+      - deployment.yaml
+      - mutatingwebhookconfiguration.yaml
+      - flamepool.yaml
     """
   end
 end
