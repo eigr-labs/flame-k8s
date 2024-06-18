@@ -25,7 +25,7 @@ defmodule FLAME.K8s.MixProject do
   defp deps do
     [
       {:flame, "~> 0.2.0"},
-      {:req, "~> 0.4.5"}
+      {:req, "~> 0.5.0"}
     ]
   end
 end
