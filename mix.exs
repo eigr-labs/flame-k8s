@@ -24,7 +24,7 @@ defmodule FLAME.K8s.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:flame, "~> 0.1.6"},
+      {:flame, "~> 0.2.0"},
       {:req, "~> 0.4.5"}
     ]
   end
